@@ -2,43 +2,50 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Tasks\TasksStore;
+use App\Http\Requests\Tasks\TasksUpdate;
 use App\Models\Tasks;
-use Illuminate\Http\Request;
 
 class TasksController extends Controller
 {
     public function index()
     {
-        return view('tasks');
+        $tasks = Tasks::all();
+
+        return view('tasks.index', compact('tasks'));
     }
 
-    public function get()
+    public function create()
     {
-        return Tasks::all();
+        return view('tasks.create');
     }
 
-    public function store(Request $request)
+    public function store(TasksStore $request)
     {
-        $tasks = new Tasks($request->all());
+        Tasks::create($request->validated());
 
-        return $tasks;
+        return redirect()->route('tasks.index')->with('status', 'Tarefa criada com sucesso.');
     }
 
-    public function update(Request $request, $id)
+    public function edit($id)
     {
-        $tasks = Tasks::findOrFail($id);
-        $tasks->update($request->all());
+        $task = Tasks::findOrFail($id);
 
-        return $tasks;
+        return view('tasks.edit', compact('task'));
     }
 
-    public function delete($id)
+    public function update(TasksUpdate $request, Tasks $task)
+    {
+        $task->update($request->validated());
+
+        return redirect()->route('tasks.index')->with('status', 'Tarefa atualizada com sucesso.');
+    }
+
+    public function destroy($id)
     {
         $tasks = Tasks::findOrFail($id);
         $tasks->delete();
 
-        return response(null, 204);
+        return redirect()->route('tasks.index')->with('status', 'Tarefa excluída com sucesso.');
     }
-
-
 }
